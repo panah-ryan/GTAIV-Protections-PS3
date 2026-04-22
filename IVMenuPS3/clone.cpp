@@ -3,15 +3,15 @@
 #include "vector.h"
 #include "natives.h"
 
-enum eEntityOwnedBy
+enum eObjectCreatedBy
 {
-	ENTITY_OWNEDBY_UNKNOWN,
-	ENTITY_OWNEDBY_1,
-	ENTITY_OWNEDBY_2,
-	ENTITY_OWNEDBY_SCRIPT,
-	ENTITY_OWNEDBY_4,
-	ENTITY_OWNEDBY_5,
-	ENTITY_OWNEDBY_DEBUG
+	CREATEDBY_INVALID,
+	CREATEDBY_RANDOM,
+	CREATEDBY_MISSION,
+	CREATEDBY_TEMP,
+	CREATEDBY_FRAGMENT_CACHE,
+	CREATEDBY_UNUSED,
+	CREATEDBY_GAME
 };
 
 uint32_t should_process_clone_bitset = 0x3BF; //All clones enabled
@@ -63,10 +63,10 @@ void setup_blacklists()
 }
 
 Detour<void>* CNetworkObjectMgr_ProcessCloneCreateData_detour;
-void CNetworkObjectMgr_ProcessCloneCreateData(void* netObjMgr, uint8_t peer, NetworkObjectType objectType, short objectID, uint8_t objectFlags, CMessage* message)
+void CNetworkObjectMgr_ProcessCloneCreateData(void* netObjMgr, uint8_t peer, eNetworkObjectType objectType, short objectID, uint8_t objectFlags, CMessageBuffer* message)
 {
 	bool should_we_create = false;
-	BOOL is_mission_object = (objectFlags & GLOBAL_FLAG_SCRIPT_OBJECT) >> 3;
+	BOOL is_mission_object = (objectFlags & CNetworkObject::NETOBJGLOBALFLAG_SCRIPTOBJECT) >> 3;
 
 	if (objectType >= NET_OBJ_TYPE_PLAYER && objectType < NET_OBJ_TYPE_COUNT //Object type we are trying to spawn is a valid type
 		&& ((1 << objectType) & should_process_clone_bitset) != 0) //We are allowing this type to be spawned
@@ -80,9 +80,16 @@ void CNetworkObjectMgr_ProcessCloneCreateData(void* netObjMgr, uint8_t peer, Net
 			int player_index = static_cast<int>(message->PeekInt(5, seek_bits));
 			uint32_t model_hash = message->PeekInt(32, seek_bits + 5);
 
-			if(!NetworkInterface::GetPlayerInfo(peer)->GetPlayerPed() //Check if they already have a ped (duplicate ped)
-				&& player_index < 16 && player_index >= 0 //Check if index they are trying to take is valid
-				&& player_index != NetworkInterface::GetLocalPlayer()->GetPeerID()) //Check if they are trying to take our index
+			if(player_index > 15 || player_index < 0 || player_index == ms_PeerMgr.GetMyPeer()->GetPeerID()) //Invalid peer id
+			{
+				player_index = CWorld::FindSlotForNewPlayer(); //Just call original function game calls for getting slot when host
+
+				if(player_index != -1)
+					message->PokeInt(player_index, 5, seek_bits);
+			}
+
+			if(!CWorld::GetPlayerInfo(peer)->GetPlayerPed() //Check if they already have a ped (duplicate ped)
+				&& player_index != -1) //Check if function returned valid index
 				should_we_create = true;
 
 			if(model_hash == NULL || (model_hash != PED_M_Y_MULTIPLAYER && model_hash != PED_F_Y_MULTIPLAYER)) //They are trying to spawn not as default multiplayer model, lets fix that
@@ -159,9 +166,9 @@ void CNetworkObjectMgr_ProcessCloneCreateData(void* netObjMgr, uint8_t peer, Net
 		}
 		case NET_OBJ_TYPE_OBJECT:
 		{
-			eEntityOwnedBy owned_by = static_cast<eEntityOwnedBy>(message->PeekInt(3, seek_bits) + 1);
+			eObjectCreatedBy created_by = static_cast<eObjectCreatedBy>(message->PeekInt(3, seek_bits) + 1);
 
-			if (is_mission_object || owned_by == ENTITY_OWNEDBY_DEBUG || owned_by == ENTITY_OWNEDBY_SCRIPT)
+			if (is_mission_object || created_by == CREATEDBY_GAME || created_by == CREATEDBY_TEMP)
 			{
 				uint32_t model_hash = message->PeekInt(32, seek_bits + 3);
 
@@ -240,7 +247,9 @@ void CNetworkObjectMgr_ProcessCloneCreateData(void* netObjMgr, uint8_t peer, Net
 	if (!should_we_create)
 	{
 		if(objectType < NET_OBJ_TYPE_COUNT && objectType >= NET_OBJ_TYPE_PLAYER)
-			_sys_printf("[Clone Create] - Prevented %s from spawning by player %s!\n", CNetworkObjectMgr::GetObjectTypeName(objectType, false), NetworkInterface::GetPlayerInfo(peer)->GetPlayerName());
+			_sys_printf("[Clone Create] - Prevented %s from spawning by player %s!\n", 
+				CNetworkObjectMgr::GetObjectTypeName(objectType, false), 
+				CWorld::GetPlayerInfo(peer)->GetPlayerName());
 
 		return;
 	}
@@ -248,18 +257,18 @@ void CNetworkObjectMgr_ProcessCloneCreateData(void* netObjMgr, uint8_t peer, Net
 	CNetworkObjectMgr_ProcessCloneCreateData_detour->CallOriginal(netObjMgr, peer, objectType, objectID, objectFlags, message); //Continue original code since its safe to spawn
 }
 
-Detour<bool>* CNetObjHeli_SerializeCloneData_detour;
-bool CNetObjHeli_SerializeCloneData(CNetworkObject* net_heli, CMessage* message)
+Detour<bool>* CNetObjHeli_CreateClone_detour;
+bool CNetObjHeli_CreateClone(CNetworkObject* net_heli, CMessageBuffer* message)
 {
-	bool ret = CNetObjHeli_SerializeCloneData_detour->CallOriginal(net_heli, message);
+	bool ret = CNetObjHeli_CreateClone_detour->CallOriginal(net_heli, message);
 
 	if (ret)
 	{
 		CHeli* heli = net_heli->GetBaseHeli();
-		if (heli && heli->m_PlayerIndexSpotlight < -1 || heli->m_PlayerIndexSpotlight > 15)
+		if (heli && heli->m_OwnerPlayer < -1 || heli->m_OwnerPlayer > 15)
 		{
-			_sys_printf("[Network Heli] - Corrected invalid player spot light crash!\n");
-			heli->m_PlayerIndexSpotlight = -1;
+			_sys_printf("[Network Heli] - Corrected invalid Owner Player crash!\n");
+			heli->m_OwnerPlayer = -1;
 		}
 	}
 

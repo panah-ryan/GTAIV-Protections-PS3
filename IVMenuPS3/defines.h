@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-enum WEAPON_TYPE
+enum eWeaponType
 {
 	WEAPON_UNARMED,
 	WEAPON_BASEBALLBAT,
@@ -63,18 +63,49 @@ enum WEAPON_TYPE
 	WEAPON_ANYWEAPON,
 };
 
-struct CWeaponInfo
+enum eWeaponFlag
 {
+	CAN_AIM,
+	CAN_AIM_WITH_ARM,
+	CAN_FREE_AIM,
+	FIRST_PERSON,
+	KEEP_CAMERA_BEHIND,
+	GUN,
+	THROWN,
+	HEAVY,
+	SILENCED,
+	MELEE_CLUB,
+	MELEE_BLADE,
+	ARMOUR_PENETRATING,
+	TWO_HANDED,
+	TREAT_AS_2HANDED_IN_COVER,
+	ANIM_RELOAD,
+	ANIM_CROUCH_FIRE,
+	CREATE_VISIBLE_ORDANCE,
+	EXPLOSION_BASED_ON_IMPACT,
+	ADD_SMOKE_ON_EXPLOSION,
+	INSTANT_KILL_IN_MP,
+	HIGHER_BREAK_FORCE
+};
+
+class CWeaponInfo
+{
+public:
 	char _0x00[0x20];
 	uint32_t m_AimFlags; //0x20
 	int _0x24;
 	int m_AnimationIndex; //0x28
+
+	static CWeaponInfo* GetWeaponInfo(eWeaponType weapon);
 };
 
-class CWeaponInfoManager
+class CAnimAssociations
 {
 public:
-	static CWeaponInfo* GetInfo(WEAPON_TYPE weapon);
+	int _0x00;
+
+	static CAnimAssociations* GetInstance() { return *reinterpret_cast<CAnimAssociations**>(0x15CF650); }
+	int GetGroupId(const char* animation);
 };
 
 struct datBitBuffer
@@ -230,7 +261,7 @@ struct datBitBuffer
 
 	bool WriteBytes(uint8_t* buffer, int bytes)
 	{
-		return ReadBits(buffer, bytes << 3, 0);
+		return WriteBits(buffer, bytes << 3, 0);
 	}
 
 	bool WriteStr(char* str, int maxChars);
@@ -251,25 +282,25 @@ struct datBitBuffer
 	}
 };
 
-class CMessage
+class CMessageBuffer
 {
 public:
 	datBitBuffer m_buffer;
 
-	CMessage() {}
-	virtual ~CMessage() {}
+	CMessageBuffer() {}
+	virtual ~CMessageBuffer() {}
 
 	int GetPos()
 	{
 		return m_buffer.m_CursorPos + m_buffer.m_BaseBitOffset;
 	}
 
-	void PokeShort(uint16_t u, int dstBitOffset)
+	void PokeObjectId(uint16_t u, int dstBitOffset)
 	{
 		m_buffer.PokeUnsigned<uint32_t>(u, 12, dstBitOffset);
 	}
 
-	uint16_t PeekShort(int srcBitOffset)
+	uint16_t PeekObjectId(int srcBitOffset)
 	{
 		return static_cast<uint16_t>(m_buffer.PeekUnsigned<uint32_t>(12, srcBitOffset));
 	}
@@ -307,8 +338,6 @@ public:
 		m_buffer.PokeUnsigned<uint32_t>(1, sign, srcBitOffset);
 		m_buffer.PokeUnsigned<uint32_t>(bits - 1, (-sign ^ u) + sign, srcBitOffset + 1);
 	}
-
-	void PeekVector3(int bits, int srcBitOffset, float* vec);
 
 	void ReadBytes(void* buffer, int size)
 	{
@@ -370,10 +399,10 @@ class CHeli : public CAutomobile
 {
 public:
 	char _0x1FA0[0x4A];
-	signed char m_PlayerIndexSpotlight; //0x1FEA
+	signed char m_OwnerPlayer; //0x1FEA
 };
 
-enum NetworkObjectType : int
+enum eNetworkObjectType : int
 {
 	NET_OBJ_TYPE_PLAYER,
 	NET_OBJ_TYPE_PED,
@@ -388,11 +417,17 @@ enum NetworkObjectType : int
 	NET_OBJ_TYPE_COUNT
 };
 
-#define GLOBAL_FLAG_SCRIPT_OBJECT 1 << 3
-
 class CNetworkObject
 {
 public:
+	enum eGlobalNetObjFlag
+	{
+		NETOBJGLOBALFLAG_PERSISTENTOWNER = 1,
+		NETOBJGLOBALFLAG_CLONEALWAYS = 2,
+		NETOBJGLOBALFLAG_DONTCLONEFORENEMIES = 4,
+		NETOBJGLOBALFLAG_SCRIPTOBJECT = 8
+	};
+
 	CEntity* m_BaseEntity;
 	int _0x08;
 	uint16_t m_NetID;
@@ -446,7 +481,7 @@ public:
 };
 
 #define INVALID_PLAYER_INDEX 0xFF
-class CNetGamePlayer
+class CNetworkPeer
 {
 public:
 	int _0x00;
@@ -460,7 +495,7 @@ public:
 		return static_cast<int>(m_PeerId);
 	}
 
-	bool IsPhysical()
+	bool IsValid()
 	{
 		if(this == nullptr)
 			return false;
@@ -474,7 +509,7 @@ class CNetworkObjectMgr
 public:
 	uint32_t _0x00;
 
-	static const char* GetObjectTypeName(NetworkObjectType type, bool isMissionObject);
+	static const char* GetObjectTypeName(eNetworkObjectType type, bool isMissionObject);
 };
 
 enum NetGameEventTypes
@@ -532,20 +567,41 @@ public:
 
 }; static_assert(sizeof(CNetworkEvent) == 0x1C, "sizeof CNetworkEvent is incorrect!");
 
-#define NETWORK_INTERFACE 0x1716D48
-class NetworkInterface
+class CWorld
 {
 public:
-	static CNetGamePlayer* GetLocalPlayer();
-	static CNetGamePlayer* GetNetPlayer(int peer);
-	static bool AreWeInNetworkGame();
+	static int FindSlotForNewPlayer();
 	static CPlayerInfo* GetPlayerInfo(int index);
-
-	static CPed* GetLocalPlayerPed()
+	static int GetMainPlayer() { return *reinterpret_cast<int*>(0xF6C590); }
+	static CPlayerInfo* GetMainPlayerInfo()
 	{
-		CPlayerInfo* info = GetPlayerInfo(GetLocalPlayer()->GetPeerID());
+		int index = GetMainPlayer();
+		if(index != INVALID_PLAYER_INDEX)
+			return GetPlayerInfo(index);
+
+		return nullptr;
+	}
+	static CPed* GetMainPlayerPed()
+	{
+		CPlayerInfo* info = GetMainPlayerInfo();
 		return info ? info->GetPlayerPed() : nullptr;
 	}
+};
+
+class CNetworkPeerMgr
+{
+public:
+	int _0x00;
+
+	CNetworkPeer* GetMyPeer();
+	CNetworkPeer* GetPeerFromPeerId(int index);
+};
+extern CNetworkPeerMgr& ms_PeerMgr;
+
+class CNetwork
+{
+public:
+	static bool IsGameInProgress();
 };
 
 enum EPISODES

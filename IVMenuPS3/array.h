@@ -44,16 +44,15 @@ public:
 	virtual void call_0x30();
 	virtual void call_0x34();
 	virtual void call_0x38();
-	virtual bool CanApplyElementData(int index, int peer, bool empty); //0x3C
+	virtual bool DoesPeerHaveAuthorityOverThisElement(int index, int peer, bool empty); //0x3C
 	virtual void call_0x40();
 	virtual void call_0x44();
 	virtual void call_0x48();
 	virtual void call_0x4C();
-	virtual bool WriteUpdate(CMessage* buffer, int index); //0x50
-	virtual bool ReadUpdate(CMessage* buffer, int index); //0x54
+	virtual bool WriteElement(CMessageBuffer* buffer, int index); //0x50
+	virtual bool ReadElement(CMessageBuffer* buffer, int index); //0x54
 	virtual void call_0x58();
-	virtual void SkipUpdate(CMessage* buffer, int index); //0x5C
-	virtual void LogElementData(bool r4, int index); //0x60
+	virtual void SkipElement(CMessageBuffer* buffer, int index); //0x5C
 };
 
 class CScriptVariablesArrayHandler : public networkArrayHandler
@@ -65,15 +64,11 @@ public:
 };
 
 int CNetworkArrayHandler_GetElementIndex(networkArrayHandler* handler, int index, int peer);
-
-extern Detour<bool>* CNetworkArrayHandler_CanApplyElementData_detour;
-bool CNetworkArrayHandler_CanApplyElementData(networkArrayHandler* handler, int index, int peer, bool empty);
-
-extern Detour<bool>* CPedGroupsArrayHandler_CanApplyElementData_detour;
-bool CPedGroupsArrayHandler_CanApplyElementData(networkArrayHandler* handler, int index, int peer, bool empty);
-
-extern Detour<bool>* CPedGroupsArrayHandler_ReadUpdate_detour;
-bool CPedGroupsArrayHandler_ReadUpdate(networkArrayHandler* handler, CMessage* message, int index);
-
-extern Detour<bool>* CScriptClientVariablesArrayHandler_ReadUpdate_detour;
-bool CScriptClientVariablesArrayHandler_ReadUpdate(CScriptVariablesArrayHandler* handler, CMessage* message, int index);
+extern Detour<bool>* CNetworkArrayHandler_DoesPeerHaveAuthorityOverThisElement_detour;
+bool CNetworkArrayHandler_DoesPeerHaveAuthorityOverThisElement(networkArrayHandler* handler, int index, int peer, bool empty);
+extern Detour<bool>* CPedGroupsArrayHandler_DoesPeerHaveAuthorityOverThisElement_detour;
+bool CPedGroupsArrayHandler_DoesPeerHaveAuthorityOverThisElement(networkArrayHandler* handler, int index, int peer, bool empty);
+extern Detour<bool>* CPedGroupsArrayHandler_ReadElement_detour;
+bool CPedGroupsArrayHandler_ReadElement(networkArrayHandler* handler, CMessageBuffer* message, int index);
+extern Detour<bool>* CScriptClientVariablesArrayHandler_ReadElement_detour;
+bool CScriptClientVariablesArrayHandler_ReadElement(CScriptVariablesArrayHandler* handler, CMessageBuffer* message, int index);

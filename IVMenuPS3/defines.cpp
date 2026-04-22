@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "defines.h"
 
-opd_s CWeaponInfoManager_GetInfo_t = { 0x66C248, GTAIV_TOC };
-CWeaponInfo*(*CWeaponInfoManager_GetInfo)(WEAPON_TYPE weapon) = (CWeaponInfo*(*)(WEAPON_TYPE))&CWeaponInfoManager_GetInfo_t;
-CWeaponInfo* CWeaponInfoManager::GetInfo(WEAPON_TYPE weapon)
+CNetworkPeerMgr& ms_PeerMgr = *reinterpret_cast<CNetworkPeerMgr*>(0x1716D48);
+
+opd_s CWeaponInfo_GetWeaponInfo_t = { 0x66C248, GTAIV_TOC };
+CWeaponInfo*(*CWeaponInfo_GetWeaponInfo)(eWeaponType weapon) = (CWeaponInfo*(*)(eWeaponType))&CWeaponInfo_GetWeaponInfo_t;
+CWeaponInfo* CWeaponInfo::GetWeaponInfo(eWeaponType weapon)
 {
-	return CWeaponInfoManager_GetInfo(weapon);
+	return CWeaponInfo_GetWeaponInfo(weapon);
 }
 
 opd_s datBitBuffer_CanReadBits_t = { 0xA77880, GTAIV_TOC };
@@ -85,53 +87,51 @@ bool datBitBuffer::WriteStr(char* str, int maxChars)
 	return datBitBuffer_WriteStr(this, str, maxChars);
 }
 
-opd_s CMessage_UnpackVector3_t = { 0x8A7A68, GTAIV_TOC };
-void(*CMessage_UnpackVector3)(CMessage* message, float* buffer, int bits) = (void(*)(CMessage*, float*, int))&CMessage_UnpackVector3_t;
-void CMessage::PeekVector3(int bits, int srcBitOffset, float* vec)
+opd_s CNetworkPeerMgr_GetMyPeer_t = { 0x89D460, GTAIV_TOC };
+CNetworkPeer*(*CNetworkPeerMgr_GetMyPeer)(CNetworkPeerMgr* mgr) = (CNetworkPeer*(*)(CNetworkPeerMgr*))&CNetworkPeerMgr_GetMyPeer_t;
+CNetworkPeer* CNetworkPeerMgr::GetMyPeer()
 {
-	int save_cursor = m_buffer.m_CursorPos;
-	int save_read = m_buffer.m_NumBitsRead;
-	int save_source = m_buffer.m_BaseBitOffset;
-
-	m_buffer.m_BaseBitOffset = srcBitOffset;
-	CMessage_UnpackVector3(this, vec, bits);
-
-	m_buffer.m_CursorPos = save_cursor;
-	m_buffer.m_NumBitsRead = save_read;
-	m_buffer.m_BaseBitOffset = save_source;
+	return CNetworkPeerMgr_GetMyPeer(this);
 }
 
-opd_s CNetGamePlayer_GetLocalPlayer_t = { 0x89D460, GTAIV_TOC };
-CNetGamePlayer*(*CNetGamePlayer_GetLocalPlayer)(uint32_t interface) = (CNetGamePlayer*(*)(uint32_t))&CNetGamePlayer_GetLocalPlayer_t;
-CNetGamePlayer* NetworkInterface::GetLocalPlayer()
+opd_s CNetwork_IsGameInProgress_t = { 0x8B96B8, GTAIV_TOC };
+bool(*CNetwork_IsGameInProgress)() = (bool(*)())&CNetwork_IsGameInProgress_t;
+bool CNetwork::IsGameInProgress()
 {
-	return CNetGamePlayer_GetLocalPlayer(NETWORK_INTERFACE);
+	return CNetwork_IsGameInProgress();
 }
 
-opd_s Network_AreWeInNetworkGame_t = { 0x8B96B8, GTAIV_TOC };
-bool(*Network_AreWeInNetworkGame)() = (bool(*)())&Network_AreWeInNetworkGame_t;
-bool NetworkInterface::AreWeInNetworkGame()
+opd_s CWorld_GetPlayerInfo_t = { 0x40A248, GTAIV_TOC };
+CPlayerInfo*(*CWorld_GetPlayerInfo)(int index) = (CPlayerInfo*(*)(int))&CWorld_GetPlayerInfo_t;
+CPlayerInfo* CWorld::GetPlayerInfo(int index)
 {
-	return Network_AreWeInNetworkGame();
+	return CWorld_GetPlayerInfo(index);
 }
 
-opd_s CPlayerInfo_GetPlayerInfo_t = { 0x40A248, GTAIV_TOC };
-CPlayerInfo*(*CPlayerInfo_GetPlayerInfo)(int index) = (CPlayerInfo*(*)(int))&CPlayerInfo_GetPlayerInfo_t;
-CPlayerInfo* NetworkInterface::GetPlayerInfo(int index)
+opd_s CNetworkPeerMgr_GetPeerFromPeerId_t = { 0x89D668, GTAIV_TOC };
+CNetworkPeer*(*CNetworkPeerMgr_GetPeerFromPeerId)(CNetworkPeerMgr* mgr, int index) = (CNetworkPeer*(*)(CNetworkPeerMgr*, int))&CNetworkPeerMgr_GetPeerFromPeerId_t;
+CNetworkPeer* CNetworkPeerMgr::GetPeerFromPeerId(int index)
 {
-	return CPlayerInfo_GetPlayerInfo(index);
-}
-
-opd_s CNetGamePlayer_GetNetPlayer_t = { 0x89D668, GTAIV_TOC };
-CNetGamePlayer*(*CNetGamePlayer_GetNetPlayer)(uint32_t _interface, int peer) = (CNetGamePlayer*(*)(uint32_t, int))&CNetGamePlayer_GetNetPlayer_t;
-CNetGamePlayer* NetworkInterface::GetNetPlayer(int peer)
-{
-	return CNetGamePlayer_GetNetPlayer(NETWORK_INTERFACE, peer);
+	return CNetworkPeerMgr_GetPeerFromPeerId(this, index);
 }
 
 opd_s CNetworkObjectMgr_GetObjectTypeName_t = { 0x828DE0, GTAIV_TOC };
-const char* (*CNetworkObjectMgr_GetObjectTypeName)(NetworkObjectType type, bool isMissionObject) = (const char* (*)(NetworkObjectType, bool))&CNetworkObjectMgr_GetObjectTypeName_t;
-const char* CNetworkObjectMgr::GetObjectTypeName(NetworkObjectType type, bool isMissionObject)
+const char* (*CNetworkObjectMgr_GetObjectTypeName)(eNetworkObjectType type, bool isMissionObject) = (const char* (*)(eNetworkObjectType, bool))&CNetworkObjectMgr_GetObjectTypeName_t;
+const char* CNetworkObjectMgr::GetObjectTypeName(eNetworkObjectType type, bool isMissionObject)
 {
 	return CNetworkObjectMgr_GetObjectTypeName(type, isMissionObject);
+}
+
+opd_s CAnimAssociations_GetGroupId_t = { 0x686528, GTAIV_TOC };
+int(*CAnimAssociations_GetGroupId)(const char* animation) = (int(*)(const char*))&CAnimAssociations_GetGroupId_t;
+int CAnimAssociations::GetGroupId(const char* animation)
+{
+	return CAnimAssociations_GetGroupId(animation);
+}
+
+opd_s CWorld_FindSlotForNewPlayer_t = { 0x410220, GTAIV_TOC };
+int(*CWorld_FindSlotForNewPlayer)() = (int(*)())&CWorld_FindSlotForNewPlayer_t;
+int CWorld::FindSlotForNewPlayer()
+{
+	return CWorld_FindSlotForNewPlayer();
 }

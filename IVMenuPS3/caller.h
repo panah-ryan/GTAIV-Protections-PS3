@@ -1,7 +1,8 @@
 #pragma once
 #include "stdafx.h"
+#include "helpers.h"
 
-unsigned int jenkinsHash(char* key);
+unsigned int scrComputeHash(char* key);
 opd_s* LookupCommandSignature(uint32_t hashCode);
 
 class Caller
@@ -45,6 +46,8 @@ public:
 	Caller()
 	{
 		argCount = 0;
+		_sys_memset(Call_Args, 0, sizeof(Call_Args));
+		_sys_memset(Call_Returns, 0, sizeof(Call_Returns));
 	}
 
 	~Caller()
@@ -77,7 +80,7 @@ public:
 		argCount = 0;
 		Arg(args...);
 
-		opd_s* op = LookupCommandSignature(jenkinsHash(const_cast<char*>(szName)));
+		opd_s* op = LookupCommandSignature(scrComputeHash(const_cast<char*>(szName)));
 		if (op->toc == TOC)
 		{
 			((void(*)(Info*))op)(&cxt);
@@ -120,7 +123,7 @@ public:
 
 		argCount = 0;
 
-		opd_s* op = LookupCommandSignature(jenkinsHash(const_cast<char*>(szName)));
+		opd_s* op = LookupCommandSignature(scrComputeHash(const_cast<char*>(szName)));
 		if (op->toc == TOC)
 		{
 			((void(*)(Info*))op)(&cxt);
@@ -151,11 +154,4 @@ public:
 
 		return NULL;
 	}
-};
-
-struct scrThread
-{
-	void* vftable;
-	int m_ThreadId;
-	uint32_t m_Prog;
 };

@@ -14,7 +14,7 @@ struct scrSignatureAndCmd
 	opd_s* cmd;
 };
 
-unsigned int jenkinsHash(char* key)
+unsigned int scrComputeHash(char* key)
 {
 	size_t len = _sys_strlen(key);
 	unsigned int hash, i;

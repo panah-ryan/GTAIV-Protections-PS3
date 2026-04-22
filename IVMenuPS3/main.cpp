@@ -19,23 +19,26 @@ BOOL shutdown_title_hooks;
 
 Caller* call = nullptr;
 
-Detour<void>* CWeaponInfoManager_LoadXML_detour;
-void CWeaponInfoManger_LoadXML(const char* weaponxml)
+Detour<void>* CWeaponInfo_LoadWeaponXMLFile_detour;
+void CWeaponInfo_LoadWeaponXMLFile(const char* weaponxml)
 {
-	CWeaponInfoManager_LoadXML_detour->CallOriginal(weaponxml);
+	CWeaponInfo_LoadWeaponXMLFile_detour->CallOriginal(weaponxml);
 
-	CWeaponInfo* rocket = CWeaponInfoManager::GetInfo(WEAPON_ROCKET);
+	uint32_t flags = 1 << CAN_AIM | 1 << CAN_FREE_AIM | 1 << ANIM_RELOAD | 1 << ANIM_CROUCH_FIRE; //0xC005
+	int anim_id = CAnimAssociations::GetInstance()->GetGroupId("grenade"); //29
+
+	CWeaponInfo* rocket = CWeaponInfo::GetWeaponInfo(WEAPON_ROCKET);
 	if (rocket)
 	{
-		rocket->m_AimFlags |= 0xC005; //CAN_AIM - CAN_FREE_AIM - ANIM_RELOAD - ANIM_CROUCH_FIRE
-		rocket->m_AnimationIndex = 29; //grenade animation group
+		rocket->m_AimFlags |= flags;
+		rocket->m_AnimationIndex = anim_id;
 	}
 
-	CWeaponInfo* e2_rocket = CWeaponInfoManager::GetInfo(WEAPON_EPISODIC_18);
+	CWeaponInfo* e2_rocket = CWeaponInfo::GetWeaponInfo(WEAPON_EPISODIC_18);
 	if (e2_rocket)
 	{
-		e2_rocket->m_AimFlags |= 0xC005; //CAN_AIM - CAN_FREE_AIM - ANIM_RELOAD - ANIM_CROUCH_FIRE
-		e2_rocket->m_AnimationIndex = 29; //grenade animation group
+		e2_rocket->m_AimFlags |= flags;
+		e2_rocket->m_AnimationIndex = anim_id;
 	}
 }
 
@@ -43,19 +46,20 @@ BOOL Init()
 {
 	call = new Caller();
 
-	CWeaponInfoManager_LoadXML_detour = new Detour<void>;
+	CWeaponInfo_LoadWeaponXMLFile_detour = new Detour<void>;
 
-	CNetworkArrayHandler_CanApplyElementData_detour = new Detour<bool>;
-	CPedGroupsArrayHandler_CanApplyElementData_detour = new Detour<bool>;
-	CPedGroupsArrayHandler_ReadUpdate_detour = new Detour<bool>;
-	CScriptClientVariablesArrayHandler_ReadUpdate_detour = new Detour<bool>;
+	CNetworkArrayHandler_DoesPeerHaveAuthorityOverThisElement_detour = new Detour<bool>;
+	CPedGroupsArrayHandler_DoesPeerHaveAuthorityOverThisElement_detour = new Detour<bool>;
+	CPedGroupsArrayHandler_ReadElement_detour = new Detour<bool>;
+	CScriptClientVariablesArrayHandler_ReadElement_detour = new Detour<bool>;
 
 	CNetworkObjectMgr_ProcessCloneCreateData_detour = new Detour<void>;
-	CNetObjHeli_SerializeCloneData_detour = new Detour<bool>;
+	CNetObjHeli_CreateClone_detour = new Detour<bool>;
 
 	setup_blacklists();
 
 	*reinterpret_cast<uint32_t*>(0x480788) = 0x4E800020; //File Bypass
+	*reinterpret_cast<uint32_t*>(0xD0DE9C) = 0x60000000; //NOP a specific packet type not used on XBOX
 
 	//Array Protections
 	//Function is to small to hook so lets just overwrite the virtual call table
@@ -69,17 +73,17 @@ BOOL Init()
 	*reinterpret_cast<void**>(0xED492C) = reinterpret_cast<void*>(CNetworkArrayHandler_GetElementIndex); //CDispatch
 
 	//File protections
-	CWeaponInfoManager_LoadXML_detour->SetupDetour(0x66DA38, reinterpret_cast<void*>(CWeaponInfoManger_LoadXML));
+	CWeaponInfo_LoadWeaponXMLFile_detour->SetupDetour(0x66DA38, reinterpret_cast<void*>(CWeaponInfo_LoadWeaponXMLFile));
 
 	//Array protections
-	CNetworkArrayHandler_CanApplyElementData_detour->SetupDetour(0x81C328, reinterpret_cast<void*>(CNetworkArrayHandler_CanApplyElementData));
-	CPedGroupsArrayHandler_CanApplyElementData_detour->SetupDetour(0x821BF8, reinterpret_cast<void*>(CPedGroupsArrayHandler_CanApplyElementData));
-	CPedGroupsArrayHandler_ReadUpdate_detour->SetupDetour(0x823BC0, reinterpret_cast<void*>(CPedGroupsArrayHandler_ReadUpdate));
-	CScriptClientVariablesArrayHandler_ReadUpdate_detour->SetupDetour(0x820D60, reinterpret_cast<void*>(CScriptClientVariablesArrayHandler_ReadUpdate));
+	CNetworkArrayHandler_DoesPeerHaveAuthorityOverThisElement_detour->SetupDetour(0x81C328, reinterpret_cast<void*>(CNetworkArrayHandler_DoesPeerHaveAuthorityOverThisElement));
+	CPedGroupsArrayHandler_DoesPeerHaveAuthorityOverThisElement_detour->SetupDetour(0x821BF8, reinterpret_cast<void*>(CPedGroupsArrayHandler_DoesPeerHaveAuthorityOverThisElement));
+	CPedGroupsArrayHandler_ReadElement_detour->SetupDetour(0x823BC0, reinterpret_cast<void*>(CPedGroupsArrayHandler_ReadElement));
+	CScriptClientVariablesArrayHandler_ReadElement_detour->SetupDetour(0x820D60, reinterpret_cast<void*>(CScriptClientVariablesArrayHandler_ReadElement));
 
 	//Clone Protections
 	CNetworkObjectMgr_ProcessCloneCreateData_detour->SetupDetour(0x83C988, reinterpret_cast<void*>(CNetworkObjectMgr_ProcessCloneCreateData));
-	CNetObjHeli_SerializeCloneData_detour->SetupDetour(0x857758, reinterpret_cast<void*>(CNetObjHeli_SerializeCloneData));
+	CNetObjHeli_CreateClone_detour->SetupDetour(0x857758, reinterpret_cast<void*>(CNetObjHeli_CreateClone));
 		
 	booted_game = TRUE;
 	return TRUE;
