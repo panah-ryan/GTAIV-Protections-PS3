@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|PS3">
+      <Configuration>Debug</Configuration>
+      <Platform>PS3</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DEV|PS3">
+      <Configuration>DEV</Configuration>
+      <Platform>PS3</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|PS3">
+      <Configuration>Release</Configuration>
+      <Platform>PS3</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E739FA1B-64CF-4E29-BAF4-CE277E442483}</ProjectGuid>
+    <ProjectName>PS3PRXTemplate</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PS3'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>SNC</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PS3'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>SNC</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEV|PS3'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>SNC</PlatformToolset>
+    <ExceptionsAndRtti>NoExceptsNoRtti</ExceptionsAndRtti>
+    <NoTocRestore>Default</NoTocRestore>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|PS3'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|PS3'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DEV|PS3'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PS3'">
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEV|PS3'">
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PS3'">
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PS3'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;__CELL_ASSERT__;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>-Xstd=cpp11 %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>Default</CompileAs>
+      <CppLanguageStd>Cpp11</CppLanguageStd>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libsn.a;libm.a;libio_stub.a;libfs_stub.a;libsysmodule_stub.a;librtc_stub.a;libnet_stub.a;hash\libsha1.a;libsysutil_stub.a;libnetctl_stub.a;libsysutil_userinfo_stub.a;libsysutil_np_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PS3'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <OptimizationLevel>Level2</OptimizationLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>Default</CompileAs>
+      <AdditionalOptions>-Xstd=cpp11 %(AdditionalOptions)</AdditionalOptions>
+      <FastMath>false</FastMath>
+      <AssumeCorrectAlignment>Default</AssumeCorrectAlignment>
+      <Branchless>Branchless0</Branchless>
+      <RelaxAlias>RelaxAlias3</RelaxAlias>
+      <AssumeCorrectSign>false</AssumeCorrectSign>
+    </ClCompile>
+    <Link>
+      <InfoStripping>StripSymsAndDebug</InfoStripping>
+      <DataStripping>StripFuncsAndData</DataStripping>
+      <AdditionalDependencies>libsn.a;libm.a;libio_stub.a;libfs_stub.a;libsysmodule_stub.a;librtc_stub.a;libnet_stub.a;hash\libsha1.a;libsysutil_stub.a;libnetctl_stub.a;libsysutil_userinfo_stub.a;libsysutil_np_stub.a</AdditionalDependencies>
+      <OutputFormat>FSPRXFile</OutputFormat>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DEV|PS3'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEV;NDEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <OptimizationLevel>Level2</OptimizationLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>Default</CompileAs>
+      <AdditionalOptions>-Xstd=cpp11 %(AdditionalOptions)</AdditionalOptions>
+      <FastMath>false</FastMath>
+      <AssumeCorrectAlignment>Default</AssumeCorrectAlignment>
+      <Branchless>Branchless0</Branchless>
+      <RelaxAlias>RelaxAlias3</RelaxAlias>
+      <AssumeCorrectSign>false</AssumeCorrectSign>
+    </ClCompile>
+    <Link>
+      <InfoStripping>StripDebug</InfoStripping>
+      <DataStripping>StripFuncsAndData</DataStripping>
+      <AdditionalDependencies>libsn.a;libm.a;libio_stub.a;libfs_stub.a;libsysmodule_stub.a;librtc_stub.a;libnet_stub.a;hash\libsha1.a;libsysutil_stub.a;libnetctl_stub.a;libsysutil_userinfo_stub.a;libsysutil_np_stub.a;libc_stub.a</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="array.h" />
+    <ClInclude Include="clone.h" />
+    <ClInclude Include="defines.h" />
+    <ClInclude Include="Detour.h" />
+    <ClInclude Include="event.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="natives.h" />
+    <ClInclude Include="pgCollection.h" />
+    <ClInclude Include="caller.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="vector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="array.cpp" />
+    <ClCompile Include="clone.cpp" />
+    <ClCompile Include="defines.cpp" />
+    <ClCompile Include="Detour.cpp" />
+    <ClCompile Include="event.cpp" />
+    <ClCompile Include="helpers.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="caller.cpp" />
+  </ItemGroup>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

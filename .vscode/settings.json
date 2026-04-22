@@ -1,0 +1,9 @@
+{
+    "C_Cpp.files.exclude": {
+        "**/.vscode": true,
+        "**/.vs": true
+    },
+    "C_Cpp.default.systemIncludePath": [
+        "${userHome}/Documents/VMWare Share/include/empty"
+    ]
+}

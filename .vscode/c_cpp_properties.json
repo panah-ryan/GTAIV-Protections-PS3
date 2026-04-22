@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "PS3",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${userHome}/Documents/VMWare Share/include/ps3/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "__CELL_ASSERT__",
+                "__PS3__"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "forcedInclude": [
+                "${userHome}/Documents/VMWare Share/include/ps3/ps3snc_intellisense.h"
+            ],
+            "intelliSenseMode": "linux-gcc-x86"
+        }
+    ],
+    "version": 4
+}
