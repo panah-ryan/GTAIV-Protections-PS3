@@ -56,6 +56,8 @@ BOOL Init()
 	CNetworkObjectMgr_ProcessCloneCreateData_detour = new Detour<void>;
 	CNetObjHeli_CreateClone_detour = new Detour<bool>;
 
+	CNetworkEventMgr_HandleEvent_detour = new Detour<void>;
+
 	setup_blacklists();
 
 	*reinterpret_cast<uint32_t*>(0x480788) = 0x4E800020; //File Bypass
@@ -85,6 +87,10 @@ BOOL Init()
 	CNetworkObjectMgr_ProcessCloneCreateData_detour->SetupDetour(0x83C988, reinterpret_cast<void*>(CNetworkObjectMgr_ProcessCloneCreateData));
 	CNetObjHeli_CreateClone_detour->SetupDetour(0x857758, reinterpret_cast<void*>(CNetObjHeli_CreateClone));
 		
+
+	//Event Protections
+	CNetworkEventMgr_HandleEvent_detour->SetupDetour(0x7FBA28, reinterpret_cast<void*>(CNetworkEventMgr_HandleEvent));
+
 	booted_game = TRUE;
 	return TRUE;
 }

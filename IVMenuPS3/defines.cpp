@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "defines.h"
 
+CNetworkObjectMgr& ms_objectMgr = *reinterpret_cast<CNetworkObjectMgr*>(0x17455FC);
 CNetworkPeerMgr& ms_PeerMgr = *reinterpret_cast<CNetworkPeerMgr*>(0x1716D48);
 
 opd_s CWeaponInfo_GetWeaponInfo_t = { 0x66C248, GTAIV_TOC };
@@ -134,4 +135,11 @@ int(*CWorld_FindSlotForNewPlayer)() = (int(*)())&CWorld_FindSlotForNewPlayer_t;
 int CWorld::FindSlotForNewPlayer()
 {
 	return CWorld_FindSlotForNewPlayer();
+}
+
+opd_s CNetworkObjectMgr_GetNetworkObject_t = { 0x8332C0, GTAIV_TOC };
+CNetworkObject*(*CNetworkObjectMgr_GetNetworkObject)(short objectID, bool includeAll) = (CNetworkObject*(*)(short, bool))&CNetworkObjectMgr_GetNetworkObject_t;
+CNetworkObject* CNetworkObjectMgr::GetNetworkObject(short objectID, bool includeAll)
+{
+	return CNetworkObjectMgr_GetNetworkObject(objectID, includeAll);
 }
