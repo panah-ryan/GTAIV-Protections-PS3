@@ -1,4 +1,3 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|PS3">
@@ -34,8 +33,7 @@
     <NoTocRestore>Default</NoTocRestore>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|PS3'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -63,6 +61,7 @@
       <AdditionalOptions>-Xstd=cpp11 %(AdditionalOptions)</AdditionalOptions>
       <CompileAs>Default</CompileAs>
       <CppLanguageStd>Cpp11</CppLanguageStd>
+      <OptimizationLevel>Leveld</OptimizationLevel>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libsn.a;libm.a;libio_stub.a;libfs_stub.a;libsysmodule_stub.a;librtc_stub.a;libnet_stub.a;hash\libsha1.a;libsysutil_stub.a;libnetctl_stub.a;libsysutil_userinfo_stub.a;libsysutil_np_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
@@ -129,9 +128,10 @@
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="caller.cpp" />
+    <ClInclude Include="other.h" />
+    <ClCompile Include="other.cpp" />
   </ItemGroup>
   <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

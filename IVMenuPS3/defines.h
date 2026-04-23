@@ -502,6 +502,8 @@ public:
 
 		return m_PeerId != INVALID_PLAYER_INDEX;
 	}
+
+	CPlayerInfo* GetGamerInfo();
 };
 
 class CNetworkObjectMgr
@@ -570,6 +572,12 @@ public:
 
 }; static_assert(sizeof(CNetworkEvent) == 0x1C, "sizeof CNetworkEvent is incorrect!");
 
+struct netEvent
+{
+	uint32_t vftable;
+	int m_CxnId;
+};
+
 class CWorld
 {
 public:
@@ -598,6 +606,7 @@ public:
 
 	CNetworkPeer* GetMyPeer();
 	CNetworkPeer* GetPeerFromPeerId(int index);
+	CNetworkPeer* GetPeerFromConnectionId(int cxnId);
 };
 extern CNetworkPeerMgr& ms_PeerMgr;
 

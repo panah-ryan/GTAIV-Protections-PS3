@@ -143,3 +143,17 @@ CNetworkObject* CNetworkObjectMgr::GetNetworkObject(short objectID, bool include
 {
 	return CNetworkObjectMgr_GetNetworkObject(objectID, includeAll);
 }
+
+opd_s CNetworkPeerMgr_GetPeerFromConnectionId_t = { 0x89D358, GTAIV_TOC };
+CNetworkPeer*(*CNetworkPeerMgr_GetPeerFromConnectionId)(int cxnId) = (CNetworkPeer*(*)(int))&CNetworkPeerMgr_GetPeerFromConnectionId_t;
+CNetworkPeer* CNetworkPeerMgr::GetPeerFromConnectionId(int cxnId)
+{
+	return CNetworkPeerMgr_GetPeerFromConnectionId(cxnId);
+}
+
+opd_s CNetworkPeer_GetGamerInfo_t = { 0x89CAD8, GTAIV_TOC };
+CPlayerInfo*(*CNetworkPeer_GetGamerInfo)(CNetworkPeer* _this) = (CPlayerInfo*(*)(CNetworkPeer*))&CNetworkPeer_GetGamerInfo_t;
+CPlayerInfo* CNetworkPeer::GetGamerInfo()
+{
+	return CNetworkPeer_GetGamerInfo(this);
+}

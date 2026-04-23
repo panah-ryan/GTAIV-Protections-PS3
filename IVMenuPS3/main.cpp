@@ -6,6 +6,7 @@
 #include "array.h"
 #include "clone.h"
 #include "event.h"
+#include "other.h"
 
 SYS_MODULE_INFO(PRXTemplate, 0, 1, 1);
 SYS_MODULE_START(PRX_ENTRY);
@@ -58,6 +59,10 @@ BOOL Init()
 
 	CNetworkEventMgr_HandleEvent_detour = new Detour<void>;
 
+	CNetworkPeerMgr_HandleGetReadyToStartPlaying_detour = new Detour<void>;
+	CNetworkPeerMgr_AddRemotePeer_detour = new Detour<bool>;
+	netPeerComplainer_OnNetEvent_detour = new Detour<void>;
+
 	setup_blacklists();
 
 	*reinterpret_cast<uint32_t*>(0x480788) = 0x4E800020; //File Bypass
@@ -86,10 +91,17 @@ BOOL Init()
 	//Clone Protections
 	CNetworkObjectMgr_ProcessCloneCreateData_detour->SetupDetour(0x83C988, reinterpret_cast<void*>(CNetworkObjectMgr_ProcessCloneCreateData));
 	CNetObjHeli_CreateClone_detour->SetupDetour(0x857758, reinterpret_cast<void*>(CNetObjHeli_CreateClone));
-		
-
+	
 	//Event Protections
 	CNetworkEventMgr_HandleEvent_detour->SetupDetour(0x7FBA28, reinterpret_cast<void*>(CNetworkEventMgr_HandleEvent));
+
+	//Other Protections
+	CNetworkPeerMgr_HandleGetReadyToStartPlaying_detour->SetupDetour(0x8A2260, reinterpret_cast<void*>(CNetworkPeerMgr_HandleGetReadyToStartPlaying));
+	CNetworkPeerMgr_AddRemotePeer_detour->SetupDetour(0x8A0900, reinterpret_cast<void*>(CNetworkPeerMgr_AddRemotePeer));
+	netPeerComplainer_OnNetEvent_detour->SetupDetour(0xD014B0, reinterpret_cast<void*>(netPeerComplainer_OnNetEvent));
+	PatchInJump(0x84BA18, *reinterpret_cast<uint32_t*>(CMsgReassignConfirm_hook), FALSE);
+	PatchInJump(0x84B620, *reinterpret_cast<uint32_t*>(CMsgReassignNegotiate_hook), FALSE);
+	PatchInJump(0x84C68C, *reinterpret_cast<uint32_t*>(CMsgReassignResponse_hook), FALSE);
 
 	booted_game = TRUE;
 	return TRUE;
