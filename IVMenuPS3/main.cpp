@@ -7,6 +7,7 @@
 #include "clone.h"
 #include "event.h"
 #include "other.h"
+#include "sync.h"
 
 SYS_MODULE_INFO(PRXTemplate, 0, 1, 1);
 SYS_MODULE_START(PRX_ENTRY);
@@ -63,6 +64,14 @@ BOOL Init()
 	CNetworkPeerMgr_AddRemotePeer_detour = new Detour<bool>;
 	netPeerComplainer_OnNetEvent_detour = new Detour<void>;
 
+	CNetObjPhysical_SyncAttach_detour = new Detour<int>;
+	CNetObjPed_SyncMovementGroup_detour = new Detour<int>;
+	CNetObjPed_SyncPedAI_detour = new Detour<int>;
+	CNetObjPed_SyncGameState_detour = new Detour<int>;
+	CNetObjPed_SyncAttach_detour = new Detour<int>;
+	CNetObjPlayer_SyncPedAppearance_detour = new Detour<int>;
+	CDummyTask_SyncNetworkData_detour = new Detour<int>;
+
 	setup_blacklists();
 
 	*reinterpret_cast<uint32_t*>(0x480788) = 0x4E800020; //File Bypass
@@ -102,6 +111,15 @@ BOOL Init()
 	PatchInJump(0x84BA18, *reinterpret_cast<uint32_t*>(CMsgReassignConfirm_hook), FALSE);
 	PatchInJump(0x84B620, *reinterpret_cast<uint32_t*>(CMsgReassignNegotiate_hook), FALSE);
 	PatchInJump(0x84C68C, *reinterpret_cast<uint32_t*>(CMsgReassignResponse_hook), FALSE);
+
+	//Sync Protections
+	CNetObjPhysical_SyncAttach_detour->SetupDetour(0x86CCC0, reinterpret_cast<void*>(CNetObjPhysical_SyncAttach));
+	CNetObjPed_SyncMovementGroup_detour->SetupDetour(0x8607A0, reinterpret_cast<void*>(CNetObjPed_SyncMovementGroup));
+	CNetObjPed_SyncPedAI_detour->SetupDetour(0x85F628, reinterpret_cast<void*>(CNetObjPed_SyncPedAI));
+	CNetObjPed_SyncGameState_detour->SetupDetour(0x865220, reinterpret_cast<void*>(CNetObjPed_SyncGameState));
+	CNetObjPed_SyncAttach_detour->SetupDetour(0x867D10, reinterpret_cast<void*>(CNetObjPed_SyncAttach));
+	CNetObjPlayer_SyncPedAppearance_detour->SetupDetour(0x872AE0, reinterpret_cast<void*>(CNetObjPlayer_SyncPedAppearance));
+	CDummyTask_SyncNetworkData_detour->SetupDetour(0x5D71E8, reinterpret_cast<void*>(CDummyTask_SyncNetworkData));
 
 	booted_game = TRUE;
 	return TRUE;

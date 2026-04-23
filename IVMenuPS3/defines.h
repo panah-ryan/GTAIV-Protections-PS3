@@ -402,6 +402,16 @@ public:
 	signed char m_OwnerPlayer; //0x1FEA
 };
 
+enum SyncType : int
+{
+	SYNC_READ,
+	SYNC_SKIP,
+	SYNC_PEEK,
+	SYNC_WRITE,
+	SYNC_LOG,
+	SYNC_SIZE
+};
+
 enum eNetworkObjectType : int
 {
 	NET_OBJ_TYPE_PLAYER,
@@ -417,6 +427,7 @@ enum eNetworkObjectType : int
 	NET_OBJ_TYPE_COUNT
 };
 
+class CNetworkPeer;
 class CNetworkObject
 {
 public:
@@ -432,6 +443,10 @@ public:
 	int _0x08;
 	uint16_t m_NetID;
 	short _0x0E;
+	uint8_t _0x10;
+	uint8_t _0x11;
+	uint8_t m_global_flag; //0x12
+	uint8_t _0x13;
 
 	virtual ~CNetworkObject() = 0;
 	virtual void call_04();
@@ -449,9 +464,16 @@ public:
 	virtual void call_34();
 	virtual CHeli* GetBaseHeli();
 
+	CNetworkPeer* GetPeerOwner();
+
 	uint16_t GetNetworkID()
 	{
 		return m_NetID;
+	}
+
+	bool IsGlobalFlagSet(int flag)
+	{
+		return (m_global_flag & flag) != 0;
 	}
 };
 

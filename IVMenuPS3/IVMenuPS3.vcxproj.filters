@@ -59,6 +59,9 @@
     <ClInclude Include="other.h">
       <Filter>Header Files\protections</Filter>
     </ClInclude>
+    <ClInclude Include="sync.h">
+      <Filter>Header Files\protections</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -86,6 +89,9 @@
       <Filter>Source Files\protections</Filter>
     </ClCompile>
     <ClCompile Include="other.cpp">
+      <Filter>Source Files\protections</Filter>
+    </ClCompile>
+    <ClCompile Include="sync.cpp">
       <Filter>Source Files\protections</Filter>
     </ClCompile>
   </ItemGroup>

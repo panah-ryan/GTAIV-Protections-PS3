@@ -157,3 +157,10 @@ CPlayerInfo* CNetworkPeer::GetGamerInfo()
 {
 	return CNetworkPeer_GetGamerInfo(this);
 }
+
+opd_s CNetworkObject_GetPeerOwner_t = { 0x829A38, GTAIV_TOC };
+CNetworkPeer*(*CNetworkObject_GetPeerOwner)(CNetworkObject* _this) = (CNetworkPeer*(*)(CNetworkObject*))&CNetworkObject_GetPeerOwner_t;
+CNetworkPeer* CNetworkObject::GetPeerOwner()
+{
+	return CNetworkObject_GetPeerOwner(this);
+}
